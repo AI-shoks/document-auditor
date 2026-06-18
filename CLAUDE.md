@@ -13,7 +13,7 @@ Python, anthropic SDK, python-dotenv, pydantic, python-docx, FastAPI, uvicorn.
 - Делаем ОДИН этап за раз. Не реализуем этапы вперёд.
 - Каждый этап = работающий запускающийся артефакт + git commit. Сначала артефакт, потом следующий шаг.
 - Не предлагать "сначала спроектируем всё". Архитектуру решаем итеративно.
-- Текущий этап: ЭТАП 5a — ЗАВЕРШЁН.
+- Текущий этап: ЭТАП 5b — ЗАВЕРШЁН.
 
 ## Текущее состояние (Этап 2)
 - audit.py: добавлены pydantic-модели AuditError и AuditReport (extra="forbid").
@@ -87,7 +87,26 @@ Python, anthropic SDK, python-dotenv, pydantic, python-docx, FastAPI, uvicorn.
   AuditReport. Commit и push сделаны.
 
 ## Что нужно доделать в Этапе 5a
-Этап 5a закрыт полностью. Следующий шаг — Этап 5b (режим patch) из полного
+Этап 5a закрыт полностью.
+
+## Текущее состояние (Этап 5b)
+- audit.py: AuditError получил поле `suggested_fix: str | None`. Для ошибок
+  с однозначной текстовой правкой (опечатка, пунктуация, явная фактическая
+  ошибка типа "Берлин"→"Париж") модель заполняет конкретный исправленный
+  фрагмент. Для случаев, требующих решения человека (противоречивые цифры/
+  факты внутри документа, неоднозначность) — `suggested_fix` строго `null`;
+  промпт явно запрещает модели выдумывать правку.
+- Это только предложение исправления, без автоматического применения к
+  документу (.txt/.docx не модифицируются).
+- main.py не менялся — `response_model=AuditReport` подхватил новое поле
+  автоматически.
+- Проверено: sample.txt и sample.docx — однозначные ошибки получают
+  конкретный suggested_fix, противоречия (выручка 20%/35%, сотрудники 50/80)
+  получают null; uvicorn + curl на /audit → 200, поле suggested_fix есть
+  у каждого error. Commit и push сделаны.
+
+## Что нужно доделать в Этапе 5b
+Этап 5b закрыт полностью. Следующий шаг — Этап 6 (eval harness) из полного
 маршрута ниже, но НЕ начинать без явного запроса пользователя.
 
 ## Подводные камни Этапа 1
@@ -105,6 +124,6 @@ Python, anthropic SDK, python-dotenv, pydantic, python-docx, FastAPI, uvicorn.
 2. Pydantic-схема (AuditError, AuditReport).  → СДЕЛАНО (Этап 2)
 3. Поддержка форматов: extract_text() для .txt/.docx/.pdf.  → СДЕЛАНО (Этап 3, .txt/.docx; .pdf не реализован — опционально)
 4. FastAPI: POST /audit.  → СДЕЛАНО (Этап 4)
-5. Режим patch + structured outputs через tool use.  → 5a СДЕЛАНО (tool use), 5b не начат
+5. Режим patch + structured outputs через tool use.  → СДЕЛАНО (5a tool use, 5b suggested_fix)
 6. Eval harness: 10 размеченных документов, precision/recall.
 7. Deploy (Railway/Render) + 60-сек видео.
