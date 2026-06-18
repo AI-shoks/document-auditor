@@ -13,7 +13,7 @@ Python, anthropic SDK, python-dotenv, pydantic, python-docx, FastAPI, uvicorn.
 - Делаем ОДИН этап за раз. Не реализуем этапы вперёд.
 - Каждый этап = работающий запускающийся артефакт + git commit. Сначала артефакт, потом следующий шаг.
 - Не предлагать "сначала спроектируем всё". Архитектуру решаем итеративно.
-- Текущий этап: ЭТАП 4 — ЗАВЕРШЁН.
+- Текущий этап: ЭТАП 5a — ЗАВЕРШЁН.
 
 ## Текущее состояние (Этап 2)
 - audit.py: добавлены pydantic-модели AuditError и AuditReport (extra="forbid").
@@ -73,7 +73,21 @@ Python, anthropic SDK, python-dotenv, pydantic, python-docx, FastAPI, uvicorn.
   при активированном venv).
 
 ## Что нужно доделать в Этапе 4
-Этап 4 закрыт полностью. Следующий шаг — Этап 5a (миграция на tool use) из полного
+Этап 4 закрыт полностью.
+
+## Текущее состояние (Этап 5a)
+- audit.py: ответ модели теперь приходит через forced tool use (`AUDIT_REPORT_TOOL`
+  с `input_schema = AuditReport.model_json_schema()`), а не текстом с markdown-обёрткой.
+  Убран воркэраунд `removeprefix("```json")...`/`json.loads` — парсинг идёт через
+  `tool_use_block.input` → `AuditReport.model_validate(...)`. Импорт `json` удалён
+  как неиспользуемый. SYSTEM_PROMPT очищен от инструкции про "только JSON без markdown".
+- main.py не менялся — зависит только от `audit()`/`ValidationError`, контракт тот же.
+- Проверено: audit.py на sample.txt и sample.docx находит те же классы заложенных
+  ошибок, что и раньше; uvicorn + curl на /audit с sample.txt → 200 + валидный
+  AuditReport. Commit и push сделаны.
+
+## Что нужно доделать в Этапе 5a
+Этап 5a закрыт полностью. Следующий шаг — Этап 5b (режим patch) из полного
 маршрута ниже, но НЕ начинать без явного запроса пользователя.
 
 ## Подводные камни Этапа 1
@@ -91,6 +105,6 @@ Python, anthropic SDK, python-dotenv, pydantic, python-docx, FastAPI, uvicorn.
 2. Pydantic-схема (AuditError, AuditReport).  → СДЕЛАНО (Этап 2)
 3. Поддержка форматов: extract_text() для .txt/.docx/.pdf.  → СДЕЛАНО (Этап 3, .txt/.docx; .pdf не реализован — опционально)
 4. FastAPI: POST /audit.  → СДЕЛАНО (Этап 4)
-5. Режим patch + structured outputs через tool use.
+5. Режим patch + structured outputs через tool use.  → 5a СДЕЛАНО (tool use), 5b не начат
 6. Eval harness: 10 размеченных документов, precision/recall.
 7. Deploy (Railway/Render) + 60-сек видео.
