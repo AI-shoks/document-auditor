@@ -1,0 +1,51 @@
+# Document Auditor
+
+## Что это
+FastAPI-сервис (пока CLI-скрипт), который принимает документ (.txt/.docx/.pdf),
+шлёт текст в Claude API с system-промптом аудитора и возвращает структурированный
+отчёт об ошибках. Портфолио-проект для роли Applied AI / LLM Engineer.
+
+## Стек
+Python, anthropic SDK, python-dotenv, pydantic. Дальше — FastAPI.
+Модель по умолчанию: claude-sonnet-4-6 (точность важнее скорости, не haiku).
+
+## ПРАВИЛА РАБОТЫ НАД ПРОЕКТОМ
+- Делаем ОДИН этап за раз. Не реализуем этапы вперёд.
+- Каждый этап = работающий запускающийся артефакт + git commit. Сначала артефакт, потом следующий шаг.
+- Не предлагать "сначала спроектируем всё". Архитектуру решаем итеративно.
+- Текущий этап: ЭТАП 1 — ЗАВЕРШЁН.
+
+## Текущее состояние (Этап 1)
+- Проект физически лежит в C:\Users\artem\document-auditor.
+- Окружение готово (venv, .env с ANTHROPIC_API_KEY, .gitignore, check.py прошёл).
+- hello_world.py написан и запущен — ответ приходит, поля разобраны
+  (response.content[0].text, usage с input/output_tokens, stop_reason=end_turn).
+- audit.py написан и протестирован на sample.txt — находит все заложенные ошибки,
+  отдаёт валидный JSON {"errors":[{"type","location","description"}],"summary"}.
+- git init сделан, репозиторий создан на GitHub: https://github.com/AI-shoks/document-auditor
+  (ПРИВАТНЫЙ, не публичный — так попросил пользователь, отступление от исходного плана ниже).
+  Первый commit и push сделаны.
+- git и gh CLI были не установлены на машине — поставлены через winget в рамках этого этапа.
+
+## Что нужно доделать в Этапе 1
+Этап 1 закрыт полностью. Следующий шаг — Этап 2 из полного маршрута ниже,
+но НЕ начинать без явного запроса пользователя.
+
+## Подводные камни Этапа 1
+- Claude иногда оборачивает JSON в ```json ... ```. Воркэранд:
+  text.strip().removeprefix("```json").removesuffix("```").strip()
+  (уйдёт на Этапе 5 при переходе на structured outputs / tool use).
+- Файлы открывать с encoding="utf-8", иначе падает на русском.
+- В Windows-консоли (cp1251) print с эмодзи/юникодом падает — нужен
+  sys.stdout.reconfigure(encoding="utf-8") в начале скрипта.
+- max_tokens=4096 хватает; если срезается — поднять.
+- .env НИКОГДА не коммитить (он уже в .gitignore — проверено).
+
+## Полный маршрут (СПРАВОЧНО — не реализовывать вперёд)
+1. Один файл end-to-end: текст → Claude API → JSON.  → СДЕЛАНО (Этап 1)
+2. Pydantic-схема (AuditError, AuditReport).
+3. Поддержка форматов: extract_text() для .txt/.docx/.pdf.
+4. FastAPI: POST /audit.
+5. Режим patch + structured outputs через tool use.
+6. Eval harness: 10 размеченных документов, precision/recall.
+7. Deploy (Railway/Render) + 60-сек видео.
