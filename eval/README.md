@@ -77,6 +77,24 @@ The system prompt is a parameter (`--prompt-version`), loaded from
 different prompt revisions be compared on the same dataset with the same
 matching logic. Current baseline: `v1` (`prompts/v1.py`).
 
+### v2 — language rule
+
+`v2` (`prompts/v2.py`) adds a single rule on top of `v1`: `description`
+and `summary` must be written in the input document's language (`v1`
+hardcoded "на русском"), while `type` stays a fixed English enum
+regardless of document language. No other behavior changed.
+
+Since matching is by `(type, paragraph)` key only — never by description
+text — this change isn't expected to move precision/recall/F1 at all.
+Re-running `v1` and `v2` back-to-back several times produced aggregate F1
+in the 0.776-0.857 range for *both* versions, with no consistent gap
+between them (e.g. one `v1` rerun scored 0.776, one `v2` rerun scored
+0.816, both close to the original 0.8 baseline). This is the
+already-documented `temperature=0` non-determinism (see "Determinism
+caveat" above), not a quality effect of the language rule — the matching
+logic is, as expected, blind to which language `description`/`summary`
+are written in.
+
 ## Running
 
 ```
