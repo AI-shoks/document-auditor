@@ -1,0 +1,8 @@
+{
+  "doc_id": "doc04",
+  "status": "ready",
+  "errors": [
+    {"type": "factual", "paragraph": 2, "note": "F_крит = 5,32 неверно, должно быть 4,67"},
+    {"type": "grammar", "paragraph": 4, "note": "|t| сравниваются → сравнивается"}
+  ]
+}

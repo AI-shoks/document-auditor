@@ -1,0 +1,103 @@
+{
+  "prompt_version": "v1",
+  "docs": [
+    {
+      "doc_id": "doc01",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "doc_id": "doc02",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "doc_id": "doc03",
+      "tp": 3,
+      "fp": 2,
+      "fn": 0,
+      "precision": 0.6,
+      "recall": 1.0,
+      "f1": 0.75
+    },
+    {
+      "doc_id": "doc04",
+      "tp": 1,
+      "fp": 0,
+      "fn": 1,
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.667
+    },
+    {
+      "doc_id": "doc05",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "doc_id": "doc06",
+      "tp": 2,
+      "fp": 2,
+      "fn": 1,
+      "precision": 0.5,
+      "recall": 0.667,
+      "f1": 0.571
+    },
+    {
+      "doc_id": "doc07",
+      "tp": 4,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    {
+      "doc_id": "doc08",
+      "tp": 2,
+      "fp": 1,
+      "fn": 1,
+      "precision": 0.667,
+      "recall": 0.667,
+      "f1": 0.667
+    },
+    {
+      "doc_id": "doc09",
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    {
+      "doc_id": "doc10",
+      "tp": 2,
+      "fp": 1,
+      "fn": 1,
+      "precision": 0.667,
+      "recall": 0.667,
+      "f1": 0.667
+    }
+  ],
+  "aggregate": {
+    "tp": 20,
+    "fp": 6,
+    "fn": 4,
+    "precision": 0.769,
+    "recall": 0.833,
+    "f1": 0.8
+  }
+}

@@ -13,7 +13,7 @@ Python, anthropic SDK, python-dotenv, pydantic, python-docx, FastAPI, uvicorn.
 - Делаем ОДИН этап за раз. Не реализуем этапы вперёд.
 - Каждый этап = работающий запускающийся артефакт + git commit. Сначала артефакт, потом следующий шаг.
 - Не предлагать "сначала спроектируем всё". Архитектуру решаем итеративно.
-- Текущий этап: ЭТАП 5b — ЗАВЕРШЁН.
+- Текущий этап: ЭТАП 6 — ЗАВЕРШЁН.
 
 ## Текущее состояние (Этап 2)
 - audit.py: добавлены pydantic-модели AuditError и AuditReport (extra="forbid").
@@ -106,8 +106,38 @@ Python, anthropic SDK, python-dotenv, pydantic, python-docx, FastAPI, uvicorn.
   у каждого error. Commit и push сделаны.
 
 ## Что нужно доделать в Этапе 5b
-Этап 5b закрыт полностью. Следующий шаг — Этап 6 (eval harness) из полного
-маршрута ниже, но НЕ начинать без явного запроса пользователя.
+Этап 5b закрыт полностью.
+
+## Текущее состояние (Этап 6)
+- Новая директория eval/ — отдельная инфраструктура для измерения content-движка,
+  audit.py/main.py НЕ изменялись (продуктовая схема с free-text location осталась как была).
+- eval/schema.py: отдельная eval-схема EvalAuditError с закрытым enum type
+  (typo/grammar/factual/contradiction/logic) и paragraph: int вместо free-text location —
+  иначе детерминированный матчинг по ключу невозможен.
+- eval/paragraphs.py: split_paragraphs()/number_paragraphs() — единая функция нумерации
+  абзацев, используется и в промпте ([P1].. [P2]..), и в show_paragraphs.py (чтобы
+  человек размечал ground truth по тем же номерам, что увидит модель).
+- eval/match.py: детерминированный greedy-матчинг по ключу (type, paragraph), без
+  сравнения текста описания. Покрыт юнит-тестами (eval/test_match.py, 8 тестов).
+- eval/eval_audit.py: temperature=0, форсированный tool use, версия промпта — параметр
+  (eval/prompts/v1.py, грузится через eval/prompts/__init__.py:load_prompt()).
+- eval/run_eval.py: прогоняет все docNN со status:"ready" в eval/docs/, считает
+  precision/recall/F1 per-doc и agregate (micro), пишет eval/results.json, печатает таблицу.
+  Документы со status:"draft" пропускаются с предупреждением (не считаются как "ошибок нет").
+- Датасет: 10 документов размечены ВРУЧНУЮ пользователем (НЕ моделью) —
+  eval/docs/doc01..10.txt + doc01..10.ground_truth.json, формат описан в eval/docs/FORMAT.md.
+  В процессе разметки найдена и исправлена пользователем реальная ошибка в doc10
+  (paragraph-номера были сдвинуты на 1, т.к. абзац не был учтён при ручном подсчёте —
+  показывает, почему show_paragraphs.py обязателен, а не подсчёт глазами).
+- Финальный прогон (prompt v1): aggregate TP=20, FP=6, FN=4, precision=0.769,
+  recall=0.833, F1=0.8. Таблица по всем 10 докам + анализ паттернов ошибок (граница
+  типов logic/contradiction/factual размыта; doc10 — модель слила два разных заложенных
+  дефекта в одну находку) — в eval/README.md (на английском).
+- requirements.txt дополнен pytest==8.4.2 (для eval/test_match.py).
+
+## Что нужно доделать в Этапе 6
+Этап 6 закрыт полностью. Следующий шаг — Этап 7 (deploy + видео), но НЕ начинать
+без явного запроса пользователя.
 
 ## Подводные камни Этапа 1
 - Claude иногда оборачивает JSON в ```json ... ```. Воркэранд:

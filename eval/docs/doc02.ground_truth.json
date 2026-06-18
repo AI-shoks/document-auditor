@@ -1,0 +1,9 @@
+{
+  "doc_id": "doc02",
+  "status": "ready",
+  "errors": [
+    {"type": "typo",          "paragraph": 2, "note": "статестически → статистически"},
+    {"type": "contradiction", "paragraph": 3, "note": "b назван незначимым, хотя в P2 признан значимым"},
+    {"type": "grammar",       "paragraph": 4, "note": "незначимы → незначим"}
+  ]
+}

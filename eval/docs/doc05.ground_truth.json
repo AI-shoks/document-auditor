@@ -1,0 +1,9 @@
+{
+  "doc_id": "doc05",
+  "status": "ready",
+  "errors": [
+    {"type": "typo",          "paragraph": 3, "note": "синхронезируются → синхронизируются"},
+    {"type": "factual",       "paragraph": 4, "note": "localStorage имеет ограничения: лимит ~5МБ, не работает в инкогнито и Safari iframe"},
+    {"type": "contradiction", "paragraph": 5, "note": "логика фильтрации зависит от JS-конфигурации (P1) vs жёстко зафиксирована в HTML (P5)"}
+  ]
+}

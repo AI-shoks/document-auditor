@@ -1,0 +1,9 @@
+{
+  "doc_id": "doc06",
+  "status": "ready",
+  "errors": [
+    {"type": "factual",       "paragraph": 3, "note": "7P включает 7 элементов, а не 5 как написано"},
+    {"type": "contradiction", "paragraph": 4, "note": "4C названа полезной в оригинале, здесь объявлена бесполезной"},
+    {"type": "logic",         "paragraph": 5, "note": "из применения 7P не следует гарантия успеха продукта"}
+  ]
+}
