@@ -1,12 +1,15 @@
 import json
 import os
 import sys
+from pathlib import Path
 
 from dotenv import load_dotenv
 from anthropic import Anthropic
+from docx import Document
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
 
 load_dotenv()
 
@@ -43,6 +46,17 @@ class AuditReport(BaseModel):
     summary: str
 
 
+def extract_text(path: str) -> str:
+    suffix = Path(path).suffix.lower()
+    if suffix == ".txt":
+        with open(path, encoding="utf-8") as f:
+            return f.read()
+    if suffix == ".docx":
+        doc = Document(path)
+        return "\n".join(p.text for p in doc.paragraphs)
+    raise ValueError(f"Неподдерживаемый формат файла: {suffix}")
+
+
 def audit(text: str) -> AuditReport:
     response = client.messages.create(
         model="claude-sonnet-4-6",
@@ -57,8 +71,12 @@ def audit(text: str) -> AuditReport:
 
 if __name__ == "__main__":
     path = sys.argv[1]
-    with open(path, encoding="utf-8") as f:
-        document_text = f.read()
+
+    try:
+        document_text = extract_text(path)
+    except ValueError as e:
+        print(e, file=sys.stderr)
+        sys.exit(1)
 
     try:
         result = audit(document_text)
