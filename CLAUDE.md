@@ -1,19 +1,19 @@
 # Document Auditor
 
 ## Что это
-FastAPI-сервис (пока CLI-скрипт), который принимает документ (.txt/.docx/.pdf),
+FastAPI-сервис, который принимает документ (.txt/.docx/.pdf),
 шлёт текст в Claude API с system-промптом аудитора и возвращает структурированный
 отчёт об ошибках. Портфолио-проект для роли Applied AI / LLM Engineer.
 
 ## Стек
-Python, anthropic SDK, python-dotenv, pydantic, python-docx. Дальше — FastAPI.
+Python, anthropic SDK, python-dotenv, pydantic, python-docx, FastAPI, uvicorn.
 Модель по умолчанию: claude-sonnet-4-6 (точность важнее скорости, не haiku).
 
 ## ПРАВИЛА РАБОТЫ НАД ПРОЕКТОМ
 - Делаем ОДИН этап за раз. Не реализуем этапы вперёд.
 - Каждый этап = работающий запускающийся артефакт + git commit. Сначала артефакт, потом следующий шаг.
 - Не предлагать "сначала спроектируем всё". Архитектуру решаем итеративно.
-- Текущий этап: ЭТАП 3 — ЗАВЕРШЁН.
+- Текущий этап: ЭТАП 4 — ЗАВЕРШЁН.
 
 ## Текущее состояние (Этап 2)
 - audit.py: добавлены pydantic-модели AuditError и AuditReport (extra="forbid").
@@ -58,8 +58,23 @@ Python, anthropic SDK, python-dotenv, pydantic, python-docx. Дальше — Fa
 
 ## Что нужно доделать в Этапе 3
 Этап 3 закрыт (минимум .txt/.docx). .pdf не сделан — по плану это бонус, не блокер.
-Следующий шаг — Этап 4 (FastAPI: POST /audit) из полного маршрута ниже,
-но НЕ начинать без явного запроса пользователя.
+
+## Текущее состояние (Этап 4)
+- main.py: FastAPI-приложение с эндпоинтом POST /audit (UploadFile → AuditReport).
+- audit.py рефакторен: extract_text(path) теперь использует общую
+  extract_text_from_bytes(content: bytes, suffix: str), которую вызывают и CLI,
+  и main.py (избегает дублирования логики .txt/.docx между скриптом и сервисом).
+- Обработка ошибок: пустой файл → 400, неподдерживаемый формат → 400,
+  невалидный ответ модели (ValidationError) → 502. Никаких голых 500 с traceback.
+- Проверено curl-ом: .txt и .docx → 200 + валидный AuditReport JSON;
+  пустой .txt → 400 "Файл пустой"; .pdf → 400 "Неподдерживаемый формат файла: .pdf".
+- requirements.txt дополнен (fastapi, uvicorn[standard], python-multipart).
+- Запуск: ./venv/Scripts/python.exe -m uvicorn main:app --port 8000 (или без venv-префикса
+  при активированном venv).
+
+## Что нужно доделать в Этапе 4
+Этап 4 закрыт полностью. Следующий шаг — Этап 5a (миграция на tool use) из полного
+маршрута ниже, но НЕ начинать без явного запроса пользователя.
 
 ## Подводные камни Этапа 1
 - Claude иногда оборачивает JSON в ```json ... ```. Воркэранд:
@@ -75,7 +90,7 @@ Python, anthropic SDK, python-dotenv, pydantic, python-docx. Дальше — Fa
 1. Один файл end-to-end: текст → Claude API → JSON.  → СДЕЛАНО (Этап 1)
 2. Pydantic-схема (AuditError, AuditReport).  → СДЕЛАНО (Этап 2)
 3. Поддержка форматов: extract_text() для .txt/.docx/.pdf.  → СДЕЛАНО (Этап 3, .txt/.docx; .pdf не реализован — опционально)
-4. FastAPI: POST /audit.
+4. FastAPI: POST /audit.  → СДЕЛАНО (Этап 4)
 5. Режим patch + structured outputs через tool use.
 6. Eval harness: 10 размеченных документов, precision/recall.
 7. Deploy (Railway/Render) + 60-сек видео.

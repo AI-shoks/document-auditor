@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import sys
@@ -46,15 +47,20 @@ class AuditReport(BaseModel):
     summary: str
 
 
-def extract_text(path: str) -> str:
-    suffix = Path(path).suffix.lower()
+def extract_text_from_bytes(content: bytes, suffix: str) -> str:
+    suffix = suffix.lower()
     if suffix == ".txt":
-        with open(path, encoding="utf-8") as f:
-            return f.read()
+        return content.decode("utf-8")
     if suffix == ".docx":
-        doc = Document(path)
+        doc = Document(io.BytesIO(content))
         return "\n".join(p.text for p in doc.paragraphs)
     raise ValueError(f"Неподдерживаемый формат файла: {suffix}")
+
+
+def extract_text(path: str) -> str:
+    suffix = Path(path).suffix
+    with open(path, "rb") as f:
+        return extract_text_from_bytes(f.read(), suffix)
 
 
 def audit(text: str) -> AuditReport:
