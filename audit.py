@@ -4,6 +4,7 @@ import sys
 
 from dotenv import load_dotenv
 from anthropic import Anthropic
+from pydantic import BaseModel, ConfigDict, ValidationError
 
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -27,7 +28,22 @@ SYSTEM_PROMPT = """Ты аудитор документов. Тебе дают �
 Если ошибок нет, "errors" — пустой список."""
 
 
-def audit(text: str) -> dict:
+class AuditError(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    type: str
+    location: str
+    description: str
+
+
+class AuditReport(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    errors: list[AuditError]
+    summary: str
+
+
+def audit(text: str) -> AuditReport:
     response = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=4096,
@@ -36,7 +52,7 @@ def audit(text: str) -> dict:
     )
     raw = response.content[0].text.strip()
     raw = raw.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-    return json.loads(raw)
+    return AuditReport.model_validate(json.loads(raw))
 
 
 if __name__ == "__main__":
@@ -44,5 +60,11 @@ if __name__ == "__main__":
     with open(path, encoding="utf-8") as f:
         document_text = f.read()
 
-    result = audit(document_text)
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    try:
+        result = audit(document_text)
+    except ValidationError as e:
+        print("Ответ модели не соответствует схеме AuditReport:", file=sys.stderr)
+        print(e, file=sys.stderr)
+        sys.exit(1)
+
+    print(result.model_dump_json(indent=2))
