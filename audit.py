@@ -88,6 +88,7 @@ def audit(text: str) -> AuditReport:
     response = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=4096,
+        temperature=0,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": text}],
         tools=[AUDIT_REPORT_TOOL],
