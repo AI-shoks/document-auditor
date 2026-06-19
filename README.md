@@ -4,6 +4,8 @@
 to `/audit`, get back a structured error report (Claude on the backend,
 cold start on Render free tier can take ~30-60s on the first request).
 
+**60s demo video:** https://youtu.be/qG_BL9XDU40
+
 FastAPI service that takes a document (`.txt`/`.docx`), sends it to the
 Claude API with an auditor system prompt, and returns a structured report
 of errors found in the text (typos, factual inconsistencies, contradictions,
