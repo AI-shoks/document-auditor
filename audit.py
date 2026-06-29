@@ -3,9 +3,9 @@ import os
 import sys
 from pathlib import Path
 
-from dotenv import load_dotenv
 from anthropic import Anthropic
 from docx import Document
+from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 sys.stdout.reconfigure(encoding="utf-8")
@@ -61,6 +61,10 @@ class AuditReport(BaseModel):
     summary: str
 
 
+class AuditModelError(Exception):
+    """Модель не вернула структурированный отчёт (нет блока tool_use)."""
+
+
 AUDIT_REPORT_TOOL = {
     "name": "submit_audit_report",
     "description": "Отправить структурированный отчёт об ошибках, найденных в документе.",
@@ -84,6 +88,18 @@ def extract_text(path: str) -> str:
         return extract_text_from_bytes(f.read(), suffix)
 
 
+def _report_from_content(content) -> AuditReport:
+    """Достаёт AuditReport из блока tool_use ответа модели.
+
+    При forced tool use блок tool_use обычно есть, но при отказе модели или
+    обрыве по max_tokens его может не быть — тогда явная AuditModelError
+    вместо StopIteration (которая всплыла бы как голый 500)."""
+    block = next((b for b in content if b.type == "tool_use"), None)
+    if block is None:
+        raise AuditModelError("Модель не вернула tool_use с отчётом")
+    return AuditReport.model_validate(block.input)
+
+
 def audit(text: str) -> AuditReport:
     response = client.messages.create(
         model="claude-sonnet-4-6",
@@ -94,10 +110,7 @@ def audit(text: str) -> AuditReport:
         tools=[AUDIT_REPORT_TOOL],
         tool_choice={"type": "tool", "name": "submit_audit_report"},
     )
-    tool_use_block = next(
-        block for block in response.content if block.type == "tool_use"
-    )
-    return AuditReport.model_validate(tool_use_block.input)
+    return _report_from_content(response.content)
 
 
 if __name__ == "__main__":
@@ -111,7 +124,7 @@ if __name__ == "__main__":
 
     try:
         result = audit(document_text)
-    except ValidationError as e:
+    except (ValidationError, AuditModelError) as e:
         print("Ответ модели не соответствует схеме AuditReport:", file=sys.stderr)
         print(e, file=sys.stderr)
         sys.exit(1)

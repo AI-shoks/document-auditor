@@ -1,0 +1,10 @@
+# Линтер-гейт для CI (ruff check). Намеренно консервативный набор,
+# тот же, что в sister-проекте file-archive.
+#
+# Включено: E/F (pycodestyle + pyflakes — реальные ошибки, неиспользуемые
+# импорты/имена), I (сортировка импортов), UP (pyupgrade).
+# line-length=120: вмещает длинные строки monkeypatch-фикстур в тестах.
+line-length = 120
+
+[lint]
+select = ["E", "F", "I", "UP"]

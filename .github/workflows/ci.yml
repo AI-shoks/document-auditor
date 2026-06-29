@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Run tests
+        run: python -m pytest -q
+        env:
+          # audit.py при импорте создаёт Anthropic-клиент, которому нужен ключ
+          # в env. Тесты в сеть не ходят (audit() мокается) — ключ-заглушка.
+          ANTHROPIC_API_KEY: test-dummy

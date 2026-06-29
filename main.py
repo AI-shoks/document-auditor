@@ -10,7 +10,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from pydantic import ValidationError
 
-from audit import AuditReport, audit, extract_text_from_bytes
+from audit import AuditModelError, AuditReport, audit, extract_text_from_bytes
 
 # --- Защита публичного демо-эндпоинта ---------------------------------------
 # /audit на КАЖДЫЙ вызов тратит токены Anthropic, а эндпоинт публичный (это
@@ -114,7 +114,7 @@ async def audit_endpoint(file: UploadFile) -> AuditReport:
         # audit() — блокирующий сетевой вызов к Anthropic; уводим в пул потоков,
         # чтобы не блокировать event loop на время запроса к модели.
         return await run_in_threadpool(audit, text)
-    except ValidationError as e:
+    except (ValidationError, AuditModelError) as e:
         raise HTTPException(
             status_code=502,
             detail=f"Ответ модели не соответствует схеме AuditReport: {e}",
