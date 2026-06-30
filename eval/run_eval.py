@@ -3,13 +3,13 @@ import json
 import sys
 from pathlib import Path
 
-sys.stdout.reconfigure(encoding="utf-8")
-sys.stderr.reconfigure(encoding="utf-8")
-
 from eval_audit import audit_eval
 from ground_truth import load_ground_truth
 from match import Key, match
 from metrics import precision_recall_f1
+
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
 
 DOCS_DIR = Path(__file__).parent / "docs"
 
