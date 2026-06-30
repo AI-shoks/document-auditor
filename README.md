@@ -55,12 +55,32 @@ echo "ANTHROPIC_API_KEY=sk-..." > .env
 uvicorn main:app --port 8000
 ```
 
+## Demo protection
+
+`/audit` spends Anthropic tokens on every call and is publicly reachable, so
+the endpoint is rate-limited rather than left open (a deliberately different
+threat model from the fail-closed write endpoint in the sister project):
+
+- **Global daily cap** (`AUDIT_DAILY_CAP`, default 100) — a hard ceiling on
+  spend regardless of source IP. This is the real budget guard, since a
+  per-IP limit alone is bypassed by rotating addresses.
+- **Per-IP rate limit** (`AUDIT_RATE_LIMIT`, default 5 per 60s).
+- **Input size cap** (`AUDIT_MAX_INPUT_CHARS`, default 50000) — bounds the
+  cost of a single call (`413` when exceeded).
+- **Optional API key** (`AUDIT_API_KEY`) — if set, `/audit` requires an
+  `X-API-Key` header (constant-time compare); if unset, the public demo stays
+  open under the limits above.
+
+All knobs are environment variables, so the public demo keeps working out of
+the box while a private deployment can lock it down by setting `AUDIT_API_KEY`.
+
 ## Architecture notes
 
 - `audit.py` — core extraction + Claude call, forced tool use against a
   Pydantic-derived schema (`AuditReport`), usable standalone as a CLI.
-- `main.py` — FastAPI wrapper (`POST /audit`), maps extraction/validation
-  failures to 400/502 instead of bare 500s.
+- `main.py` — FastAPI wrapper (`POST /audit`), token-spend protected
+  (see Demo protection), maps extraction/validation failures to 400/413/502
+  instead of bare 500s.
 - `eval/` — separate harness with its own closed-schema matching, used to
   score the auditor numerically against ground truth. See
   [eval/README.md](eval/README.md) for why it's a separate schema from the
